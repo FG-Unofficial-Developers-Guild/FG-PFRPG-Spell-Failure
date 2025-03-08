@@ -3,9 +3,9 @@
 --
 local onSpellAction_old
 local function onSpellAction_new(draginfo, nodeAction, sSubRoll, ...)
-	local sType = DB.getValue(nodeAction, "type", "")
-	if sType == "cast" then
-		SpellFailure.arcaneSpellFailure(DB.getChild(nodeAction, "..."))
+	local sType = DB.getValue(nodeAction, 'type', '')
+	if sType == 'cast' then
+		SpellFailure.arcaneSpellFailure(DB.getChild(nodeAction, '...'))
 	end
 
 	onSpellAction_old(draginfo, nodeAction, sSubRoll, ...)
@@ -15,27 +15,27 @@ local function getArmorCategory(nodeChar)
 	local nArmorCategory = 0
 	local nShieldEquipped = 0
 
-	for _, v in ipairs(DB.getChildList(nodeChar, "inventorylist")) do
-		local nItemCarried = DB.getValue(v, "carried", 0)
-		local sItemType = string.lower(DB.getValue(v, "type", ""))
-		local sItemSubtype = string.lower(DB.getValue(v, "subtype", ""))
+	for _, v in ipairs(DB.getChildList(nodeChar, 'inventorylist')) do
+		local nItemCarried = DB.getValue(v, 'carried', 0)
+		local sItemType = string.lower(DB.getValue(v, 'type', ''))
+		local sItemSubtype = string.lower(DB.getValue(v, 'subtype', ''))
 
 		if nItemCarried == 2 then
-			if string.match(sItemType, "armor", 1) then
-				if string.match(sItemSubtype, "heavy", 1) then
+			if string.match(sItemType, 'armor', 1) then
+				if string.match(sItemSubtype, 'heavy', 1) then
 					nArmorCategory = 3
 					break
-				elseif string.match(sItemSubtype, "medium", 1) then
+				elseif string.match(sItemSubtype, 'medium', 1) then
 					nArmorCategory = 2
-				elseif string.match(sItemSubtype, "light", 1) then
+				elseif string.match(sItemSubtype, 'light', 1) then
 					nArmorCategory = 1
 				else
 					nArmorCategory = 3
 					break
 				end
 			end
-			if string.match(sItemType, "shield", 1) then
-				if string.match(sItemSubtype, "tower", 1) then
+			if string.match(sItemType, 'shield', 1) then
+				if string.match(sItemSubtype, 'tower', 1) then
 					nShieldEquipped = 2
 					break
 				else
@@ -55,7 +55,7 @@ end
 --	@param nodeSpellset databasenode of the spellset that the cast spell is from
 --	@return bArcaneCaster boolean value for whether the spellset used is a match for any in the table
 local function isArcaneCaster(nodeChar, nodeSpellset)
-	local sPlayerSpellset = string.lower(DB.getValue(nodeSpellset, "label"))
+	local sPlayerSpellset = string.lower(DB.getValue(nodeSpellset, 'label'))
 	local nArmorCategory, nShieldEquipped = getArmorCategory(nodeChar)
 	local bArcaneCaster = false
 
@@ -99,11 +99,11 @@ end
 --	@param s input, a string of CSVs
 --	@return t output, an indexed table of values
 local function fromCSV(s)
-	s = s .. "," -- ending comma
+	s = s .. ',' -- ending comma
 	local t = {} -- table to collect fields
 	local fieldstart = 1
 	repeat
-		local nexti = string.find(s, ",", fieldstart)
+		local nexti = string.find(s, ',', fieldstart)
 		table.insert(t, string.sub(s, fieldstart, nexti - 1))
 		fieldstart = nexti + 1
 	until fieldstart > string.len(s)
@@ -118,14 +118,14 @@ end
 --	@param nodeSpell database node of the spell being cast
 --	@return bVerbalSpell boolean value, true if spell has no verbal compenents
 local function isVerbalSpell(nodeSpell)
-	local sComponents = DB.getValue(nodeSpell, "components")
+	local sComponents = DB.getValue(nodeSpell, 'components')
 	local bVerbalSpell = false
 
 	if sComponents then
 		local tComponents = fromCSV(string.lower(sComponents))
 
 		for _, v in pairs(tComponents) do
-			if v == "v" or v == " v" then
+			if v == 'v' or v == ' v' then
 				bVerbalSpell = true
 			end
 		end
@@ -141,14 +141,14 @@ end
 --	@param nodeSpell database node of the spell being cast
 --	@return bSomaticSpell boolean value, true if spell has no somatic compenents
 local function isSomaticSpell(nodeSpell)
-	local sComponents = DB.getValue(nodeSpell, "components")
+	local sComponents = DB.getValue(nodeSpell, 'components')
 	local bSomaticSpell = false
 
 	if sComponents then
 		local tComponents = fromCSV(string.lower(sComponents))
 
 		for _, v in pairs(tComponents) do
-			if v == "s" or v == " s" then
+			if v == 's' or v == ' s' then
 				bSomaticSpell = true
 			end
 		end
@@ -163,9 +163,9 @@ end
 --	@param nSomaticSpellFailureChance The numerical chance that the spell being cast will fail
 local function rollDice(nodeChar, rActor, nSomaticSpellFailureChance)
 	local rRoll = {}
-	rRoll.sType = "spellfailure"
-	rRoll.aDice = { "d100" }
-	rRoll.sDesc = "[SPELL FAILURE]"
+	rRoll.sType = 'spellfailure'
+	rRoll.aDice = { 'd100' }
+	rRoll.sDesc = '[SPELL FAILURE]'
 	rRoll.nTarget = nSomaticSpellFailureChance -- set DC to currently active spell failure chance
 
 	ActionsManager.roll(nodeChar, rActor, rRoll)
@@ -177,24 +177,24 @@ end
 --	Other functions are then called to determine whether a roll should be performed.
 --	luacheck: globals arcaneSpellFailure
 function arcaneSpellFailure(nodeSpell)
-	local nodeSpellset = DB.getChild(nodeSpell, ".....")
-	local nodeActor = DB.getChild(nodeSpellset, "...")
+	local nodeSpellset = DB.getChild(nodeSpell, '.....')
+	local nodeActor = DB.getChild(nodeSpellset, '...')
 	local rActor = ActorManager.resolveActor(nodeActor)
 
 	local bSomaticSpell = isSomaticSpell(nodeSpell)
 	local bVerbalSpell = isVerbalSpell(nodeSpell)
-	local messagedata = { text = "", sender = rActor.sName, font = "emotefont" }
+	local messagedata = { text = '', sender = rActor.sName, font = 'emotefont' }
 
 	if ActorManager.isPC(rActor) then
-		local nSomaticSpellFailureChance = DB.getValue(nodeSpellset, "...encumbrance.spellfailure", 0)
+		local nSomaticSpellFailureChance = DB.getValue(nodeSpellset, '...encumbrance.spellfailure', 0)
 
-		local nSpellFailureEffects = EffectManager35E.getEffectsBonus(rActor, "SF", true) or 0
+		local nSpellFailureEffects = EffectManager35E.getEffectsBonus(rActor, 'SF', true) or 0
 		nSomaticSpellFailureChance = nSomaticSpellFailureChance + nSpellFailureEffects
 
 		local nVerbalSpellFailureChance = 0
-		if EffectManager35E.hasEffectCondition(rActor, "Deafened") then
+		if EffectManager35E.hasEffectCondition(rActor, 'Deafened') then
 			nVerbalSpellFailureChance = 20
-			messagedata.text = string.format(Interface.getString("spellfail_verbalwhiledeafened"), rActor.sName)
+			messagedata.text = string.format(Interface.getString('spellfail_verbalwhiledeafened'), rActor.sName)
 			Comm.deliverChatMessage(messagedata)
 		end
 		nVerbalSpellFailureChance = nVerbalSpellFailureChance + nSpellFailureEffects
@@ -205,22 +205,18 @@ function arcaneSpellFailure(nodeSpell)
 
 		if nSomaticSpellFailureChance > 0 then
 			-- true if somatic failure is forced on
-			local bArcaneCaster = isArcaneCaster(nodeActor, nodeSpellset)
-				or EffectManager35E.hasEffectCondition(rActor, "FSF")
-			if EffectManager35E.hasEffectCondition(rActor, "NSF") then
+			local bArcaneCaster = isArcaneCaster(nodeActor, nodeSpellset) or EffectManager35E.hasEffectCondition(rActor, 'FSF')
+			if EffectManager35E.hasEffectCondition(rActor, 'NSF') then
 				bArcaneCaster = false
 			end
 
 			-- set up and roll percentile dice for arcane failure
 			if bArcaneCaster == true and bSomaticSpell == true then
-				if OptionsManager.isOption("AUTO_SPELL_FAILURE", "auto") then
+				if OptionsManager.isOption('AUTO_SPELL_FAILURE', 'auto') then
 					rollDice(nodeActor, rActor, nSomaticSpellFailureChance)
-				elseif OptionsManager.isOption("AUTO_SPELL_FAILURE", "prompt") then
-					messagedata.text = string.format(
-						Interface.getString("spellfail_prompt"),
-						nSomaticSpellFailureChance,
-						Interface.getString("spellfail_somatic")
-					)
+				elseif OptionsManager.isOption('AUTO_SPELL_FAILURE', 'prompt') then
+					messagedata.text =
+						string.format(Interface.getString('spellfail_prompt'), nSomaticSpellFailureChance, Interface.getString('spellfail_somatic'))
 					Comm.deliverChatMessage(messagedata)
 				end
 			end
@@ -228,14 +224,11 @@ function arcaneSpellFailure(nodeSpell)
 		if nVerbalSpellFailureChance > 0 then
 			-- set up and roll percentile dice for arcane failure
 			if bVerbalSpell == true then
-				if OptionsManager.isOption("AUTO_SPELL_FAILURE", "auto") then
+				if OptionsManager.isOption('AUTO_SPELL_FAILURE', 'auto') then
 					rollDice(nodeActor, rActor, nVerbalSpellFailureChance)
-				elseif OptionsManager.isOption("AUTO_SPELL_FAILURE", "prompt") then
-					messagedata.text = string.format(
-						Interface.getString("spellfail_prompt"),
-						nVerbalSpellFailureChance,
-						Interface.getString("spellfail_verbal")
-					)
+				elseif OptionsManager.isOption('AUTO_SPELL_FAILURE', 'prompt') then
+					messagedata.text =
+						string.format(Interface.getString('spellfail_prompt'), nVerbalSpellFailureChance, Interface.getString('spellfail_verbal'))
 					Comm.deliverChatMessage(messagedata)
 				end
 			end
@@ -244,39 +237,38 @@ function arcaneSpellFailure(nodeSpell)
 
 	local bNoVerbal = false
 	-- if actor has silenced condition
-	if EffectManager35E.hasEffectCondition(rActor, "Silenced") then
+	if EffectManager35E.hasEffectCondition(rActor, 'Silenced') then
 		bNoVerbal = true
 	end
 
 	local bConcentrationCheck = false
 	local sCondition, sParenthetical
 	-- if actor is grappled or pinned condition
-	if EffectManager35E.hasEffectCondition(rActor, "Grappled") then
+	if EffectManager35E.hasEffectCondition(rActor, 'Grappled') then
 		bConcentrationCheck = true
-		sCondition = "grappled"
-		sParenthetical = Interface.getString("spellfail_somaticwhilepinned")
+		sCondition = 'grappled'
+		sParenthetical = Interface.getString('spellfail_somaticwhilepinned')
 	end
-	if EffectManager35E.hasEffectCondition(rActor, "Pinned") then
+	if EffectManager35E.hasEffectCondition(rActor, 'Pinned') then
 		bConcentrationCheck = true
-		sCondition = "pinned"
-		sParenthetical = Interface.getString("spellfail_somaticwhilepinned")
+		sCondition = 'pinned'
+		sParenthetical = Interface.getString('spellfail_somaticwhilepinned')
 	end
-	if EffectManager35E.hasEffectCondition(rActor, "Entangled") then
+	if EffectManager35E.hasEffectCondition(rActor, 'Entangled') then
 		bConcentrationCheck = true
-		sCondition = "entangled"
-		sParenthetical = Interface.getString("spellfail_somaticwhileentangled")
+		sCondition = 'entangled'
+		sParenthetical = Interface.getString('spellfail_somaticwhileentangled')
 	end
 	-- if bSomaticSpell is true, roll spell failure chance
 	if bNoVerbal and bVerbalSpell then
-		messagedata.text = string.format(Interface.getString("spellfail_verbalwhilesilenced"), rActor.sName)
+		messagedata.text = string.format(Interface.getString('spellfail_verbalwhilesilenced'), rActor.sName)
 		Comm.deliverChatMessage(messagedata)
 	end
-	if sCondition == "pinned" and bSomaticSpell then
-		messagedata.text = string.format(Interface.getString("spellfail_somaticwhilepinned"), rActor.sName)
+	if sCondition == 'pinned' and bSomaticSpell then
+		messagedata.text = string.format(Interface.getString('spellfail_somaticwhilepinned'), rActor.sName)
 		Comm.deliverChatMessage(messagedata)
 	elseif bConcentrationCheck then
-		messagedata.text =
-			string.format(Interface.getString("spellfail_concentrationcheck"), rActor.sName, sCondition, sParenthetical)
+		messagedata.text = string.format(Interface.getString('spellfail_concentrationcheck'), rActor.sName, sCondition, sParenthetical)
 		Comm.deliverChatMessage(messagedata)
 	end
 end
@@ -296,11 +288,11 @@ local function spellFailureMessage(rSource, _, rRoll)
 		local nTotal = ActionsManager.total(rRoll)
 		local nTargetDC = tonumber(rRoll.nTarget) or 0
 
-		rMessage.text = rMessage.text .. string.format(Interface.getString("spellfail_failurethreshold"), nTargetDC)
+		rMessage.text = rMessage.text .. string.format(Interface.getString('spellfail_failurethreshold'), nTargetDC)
 		if nTotal >= nTargetDC then
-			rMessage.text = rMessage.text .. " [SUCCESS]"
+			rMessage.text = rMessage.text .. ' [SUCCESS]'
 		else
-			rMessage.text = rMessage.text .. " [FAILURE]"
+			rMessage.text = rMessage.text .. ' [FAILURE]'
 		end
 	end
 
@@ -308,7 +300,7 @@ local function spellFailureMessage(rSource, _, rRoll)
 end
 
 function onInit()
-	ActionsManager.registerResultHandler("spellfailure", spellFailureMessage)
+	ActionsManager.registerResultHandler('spellfailure', spellFailureMessage)
 	onSpellAction_old = SpellManager.onSpellAction
 	SpellManager.onSpellAction = onSpellAction_new
 end
