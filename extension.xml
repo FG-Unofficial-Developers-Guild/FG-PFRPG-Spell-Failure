@@ -6,7 +6,7 @@
 	<properties>
 		<name>Feature: Spell Failure</name>
 		<version>1.8</version>
-		<author>bmos (Wil Thieme)</author>
+		<author>bmos (Ramona T)</author>
 		<description>This extension rolls arcane failure chance when the cast button of the spell on the actions tab is clicked.</description>
 		<ruleset>
 			<name>3.5E</name>
